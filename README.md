@@ -1,5 +1,5 @@
 <div align="center">
-  <img width="200" height="200" src="https://images.unsplash.com/photo-1616423640778-28d1b53229bd?auto=format&fit=crop&w=400&q=80" alt="GlyphParts Logo" style="border-radius: 20px; object-fit: cover;" />
+  <img width="200" height="200" src="./public/logo_preview.png" alt="GlyphParts Logo" style="border-radius: 20px; object-fit: cover;" />
   <br/>
   <h1>GlyphParts v1.0</h1>
   <p><strong>The Independent Archive for Nothing & CMF Spare Parts Pricing</strong></p>
@@ -19,7 +19,7 @@ GlyphParts is a fast, offline-capable Progressive Web Application (PWA) designed
 Built with the core principle of **Ship. Observe. Improve.**, this independent resource aims to help the community estimate repair costs without relying on slow or hard-to-navigate official portals.
 
 <div align="center">
-  <img src="https://images.unsplash.com/photo-1592890288564-76628a30a657?auto=format&fit=crop&w=800&q=80" alt="Spare Parts App" style="border-radius: 12px;" />
+  <img src="./public/app_preview.png" alt="Spare Parts App UI Preview" style="border-radius: 12px;" />
 </div>
 
 ## ✨ Highlights & Features
