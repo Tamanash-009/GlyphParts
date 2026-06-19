@@ -1,0 +1,6 @@
+{
+  "name": "GLYPHPARTS",
+  "description": "The Complete Nothing & CMF Spare Parts Archive",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
