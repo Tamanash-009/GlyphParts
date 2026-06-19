@@ -1,20 +1,81 @@
 <div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
+  <img width="200" height="200" src="https://images.unsplash.com/photo-1616423640778-28d1b53229bd?auto=format&fit=crop&w=400&q=80" alt="GlyphParts Logo" style="border-radius: 20px; object-fit: cover;" />
+  <br/>
+  <h1>GlyphParts v1.0</h1>
+  <p><strong>The Independent Archive for Nothing & CMF Spare Parts Pricing</strong></p>
+  
+  [![Vercel Deploy](https://vercel.com/button)](https://vercel.com/new)
+  [![React](https://img.shields.io/badge/React-19.0-blue?style=flat-square&logo=react)](https://reactjs.org/)
+  [![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4.0-38B2AC?style=flat-square&logo=tailwind-css)](https://tailwindcss.com/)
+  [![PWA](https://img.shields.io/badge/PWA-Ready-success?style=flat-square)](#)
 </div>
 
-# Run and deploy your AI Studio app
+---
 
-This contains everything you need to run your app locally.
+## 📱 About GlyphParts
 
-View your app in AI Studio: https://ai.studio/apps/05b9add4-9b29-4991-a4f7-e01c9ae356a1
+GlyphParts is a fast, offline-capable Progressive Web Application (PWA) designed to provide accurate, up-to-date, and transparent pricing for original spare parts of Nothing and CMF smartphones. 
 
-## Run Locally
+Built with the core principle of **Ship. Observe. Improve.**, this independent resource aims to help the community estimate repair costs without relying on slow or hard-to-navigate official portals.
 
-**Prerequisites:**  Node.js
+<div align="center">
+  <img src="https://images.unsplash.com/photo-1592890288564-76628a30a657?auto=format&fit=crop&w=800&q=80" alt="Spare Parts App" style="border-radius: 12px;" />
+</div>
 
+## ✨ Highlights & Features
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+- **Blazing Fast Search:** Find any component or device instantly with fuzzy-matching, keyboard shortcuts (⌘K), and Voice Search.
+- **Offline Mode (PWA):** Install the app directly to your home screen. Our Service Worker ensures full offline capability.
+- **Service Center Locator:** Privacy-first calculation to find the nearest official repair center without relying on commercial tracking.
+- **Dark & Light Themes:** Perfectly balanced semantic themes to match your system preferences.
+- **Community Sourced Accuracy:** Built-in "Report Incorrect Price" pipelines allow the community to verify data.
+- **Device Comparisons:** Side-by-side technical specifications and component price comparisons.
+
+## 🛠 Tech Stack
+
+- **Framework:** React 19 + Vite
+- **Styling:** TailwindCSS v4
+- **Routing:** React Router v7
+- **Animations:** Framer Motion
+- **Icons:** Lucide React
+- **PWA:** Vite PWA Plugin
+- **Maps:** Leaflet & React-Leaflet (OpenStreetMap)
+
+## 🚀 Run Locally
+
+**Prerequisites:** Node.js (v18+)
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/Tamanash-009/GlyphParts.git
+   cd GlyphParts
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Run the development server:
+   ```bash
+   npm run dev
+   ```
+
+## 🌍 Production Build
+
+To test the production build locally including the generated PWA service workers and sitemap:
+
+```bash
+npm run build
+npm run preview
+```
+
+## ⚖️ Disclaimer
+
+GlyphParts is strictly an informational index and archive. We do not sell hardware, supply spare components, or operate commercial repair facilities. All displayed price tables are strictly model-wise original pricing for informative indexing purposes. Prices do not include labor or taxes.
+
+---
+
+<div align="center">
+  <p>Built for the Community.</p>
+</div>
