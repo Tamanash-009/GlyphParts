@@ -245,9 +245,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
  </div>
 
- <div className="mt-16 pt-8 border-t border-border flex justify-between items-center text-xs text-muted-foreground/60 font-light pr-4">
-  <p>© {new Date().getFullYear()} GlyphParts. Independent Archive.</p>
-  <p>Not affiliated with Nothing Technology Limited.</p>
+ <div className="mt-16 pt-8 border-t border-border flex flex-col gap-6 text-xs text-muted-foreground/60 font-light pr-4">
+  <p className="max-w-4xl text-[10px] sm:text-[11px] leading-relaxed opacity-70">
+   <strong>Legal Disclaimer:</strong> GlyphParts is an independent, community-driven database. We are not affiliated, associated, authorized, endorsed by, or in any way officially connected with Nothing Technology Limited, CMF, or any of its subsidiaries. The names 'Nothing', 'CMF', and related trademarks are the property of their respective owners. All product images are AI-generated representations and not official photographs.
+  </p>
+  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+   <p>© {new Date().getFullYear()} GlyphParts. Independent Archive.</p>
+   <p>Not affiliated with Nothing Technology Limited.</p>
+  </div>
  </div>
  </div>
  </footer>
