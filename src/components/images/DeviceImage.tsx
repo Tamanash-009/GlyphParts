@@ -80,6 +80,9 @@ export function DeviceImage({
               alt={alt}
               loading={priority ? 'eager' : 'lazy'}
               decoding="async"
+              ref={(img) => {
+                if (img?.complete) setIsLoaded(true);
+              }}
               onLoad={() => setIsLoaded(true)}
               onError={() => setHasError(true)}
               className={`transition-opacity duration-500 ease-in-out z-10 relative drop-shadow-[0_20px_50px_rgba(0,0,0,0.4)] dark:drop-shadow-[0_20px_50px_rgba(255,255,255,0.1)] ${isLoaded ? 'opacity-100' : 'opacity-0'} ${className}`}
