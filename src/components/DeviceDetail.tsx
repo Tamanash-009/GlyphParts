@@ -5,7 +5,8 @@ import { getDatabaseState, Phone, SparePart } from '../data/database';
 import { useSettings } from '../contexts/SettingsContext';
 import { useUser } from '../contexts/UserContext';
 
-import { InteractiveDeviceViewer } from './InteractiveDeviceViewer';
+import { ThumbnailImage } from './images/ThumbnailImage';
+import { DeviceImage } from './images/DeviceImage';
 
 interface DeviceDetailProps {
  phone: Phone;
@@ -135,25 +136,19 @@ export const DeviceDetail: React.FC<DeviceDetailProps> = ({
 
    {/* HERO SECTION - COMPACT */}
    <div className="grid grid-cols-1 md:grid-cols-4 gap-8 items-start mb-12">
-    {/* Small Phone Image Box */}
-    <div className="md:col-span-1">
-      <InteractiveDeviceViewer 
-        deviceImage={phone.official_image_source || 'https://images.unsplash.com/photo-1695420967527-fac424bd0d39?q=80&w=600&auto=format&fit=crop'} 
-        name={phone.name} 
-        deviceColorMap={
-          phone.color_variants 
-            ? Object.fromEntries(phone.color_variants.map(c => {
-                const hex = c.toLowerCase().includes('dark') || c.toLowerCase().includes('black') ? '#111111' 
-                          : c.toLowerCase().includes('white') ? '#FFFFFF' 
-                          : c.toLowerCase().includes('grey') ? '#555555'
-                          : c.toLowerCase().includes('blue') ? '#0070f3'
-                          : phone.imageColor || '#FFFFFF';
-                return [c, hex];
-              }))
-            : {}
-        }
-        defaultColor={phone.color_variants ? phone.color_variants[0] : 'White'}
-      />
+    {/* Phone Image Box */}
+    <div className="md:col-span-1 sticky top-24 z-30">
+      <div className="relative w-full md:w-[340px] aspect-[3/4] rounded-[32px] bg-card border border-border flex items-center justify-center p-8 shadow-sm overflow-hidden">
+        {/* Subtle blur effect */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-muted/20" />
+        <DeviceImage 
+          deviceSlug={phone.slug || phone.id.replace('nothing-', '')}
+          imageType="hero"
+          alt={`${phone.name} Render`}
+          className="w-full h-full object-contain drop-shadow-2xl z-10 hover:scale-105 transition-transform duration-500"
+          containerClassName="w-full h-full bg-transparent"
+        />
+      </div>
     </div>
 
     {/* Specifications */}
@@ -359,7 +354,9 @@ export const DeviceDetail: React.FC<DeviceDetailProps> = ({
             <div className="flex flex-col gap-2 flex-1 pr-4">
              <div>
               <div className="flex items-center gap-2 mb-1.5">
-               <div className="font-medium text-[15px] md:text-[17px] tracking-tight text-foreground leading-tight">{part.part_name}</div>
+               <Link to={`/device/${phone.id}/${part.category_id}`} className="font-medium text-[15px] md:text-[17px] tracking-tight text-foreground leading-tight hover:text-primary transition-colors hover:underline">
+                {part.part_name}
+               </Link>
                {part.confidence_score === 'High' && (
                 <span className="px-1.5 py-0.5 rounded text-[9px] font-mono tracking-widest uppercase bg-[rgba(74,222,128,0.1)] border border-[rgba(74,222,128,0.15)] text-[#4ADE80]">Verified</span>
                )}
@@ -430,9 +427,13 @@ export const DeviceDetail: React.FC<DeviceDetailProps> = ({
        {related.map(rel => (
         <Link key={rel.id} to={`/device/${rel.id}`} className="block group">
          <div className="flex flex-col gap-4 bg-transparent border border-border p-5 rounded-3xl hover:border-foreground/50 transition-colors h-full card-shadow hover-lift">
-          <div className="w-full aspect-[4/5] sm:aspect-square bg-muted rounded-2xl relative overflow-hidden flex flex-col items-center justify-center p-6 transition-transform duration-500">
-           <div className="absolute inset-0 opacity-20 group-hover:opacity-40 transition-opacity blur-[40px]" style={{ backgroundColor: rel.imageColor }} />
-           <Smartphone className="w-12 h-12 text-foreground/40 group-hover:text-foreground/80 group-hover:scale-110 transition-all duration-500" strokeWidth={1} />
+          <div className="w-full aspect-[4/5] sm:aspect-square bg-card border border-border/50 rounded-2xl relative overflow-hidden flex flex-col items-center justify-center p-6 transition-transform duration-500">
+            <DeviceImage 
+              deviceSlug={rel.slug || rel.id.replace('nothing-', '')} 
+              imageType="thumbnail" 
+              className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500" 
+              containerClassName="w-full h-full bg-transparent"
+            />
           </div>
           <div className="px-2 pb-2">
            <span className="block text-lg font-medium text-foreground tracking-tight leading-tight mb-0.5">{rel.name}</span>

@@ -1,20 +1,26 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, Suspense, lazy } from 'react';
 import { Link } from 'react-router-dom';
 import { SearchOverlay } from '../components/SearchOverlay';
 import { ArrowRight, ChevronDown, MapPin } from 'lucide-react';
 import { POPULAR_DEVICES, LATEST_UPDATES, FAQS } from '../data';
 import { useSettings } from '../contexts/SettingsContext';
 import { SEO } from '../components/SEO';
-import { OptimizedImage } from '../components/OptimizedImage';
 import { getDatabaseState } from '../data/database';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion';
 import { useUser } from '../contexts/UserContext';
+import { FloatingImage } from '../components/images/FloatingImage';
+import { ThumbnailImage } from '../components/images/ThumbnailImage';
+import { DeviceImage } from '../components/images/DeviceImage';
+import { OptimizedImage } from '../components/OptimizedImage';
+
+const CinematicScene = lazy(() => import('../components/CinematicScene').then(module => ({ default: module.CinematicScene })));
 
 export function HomePage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const { formatPrice, locationStatus, nearestCenters, requestLocation } = useSettings();
   const { parts, phones } = getDatabaseState();
   const { recentlyViewed } = useUser();
+  const prefersReducedMotion = useReducedMotion();
   
   const featuredDevice = POPULAR_DEVICES.find(d => d.id === 'nothing-phone-3') || POPULAR_DEVICES[0];
   const featuredPartsCount = parts.filter(p => p.phone_id === featuredDevice.id).length;
@@ -58,24 +64,46 @@ export function HomePage() {
         <div className="w-full max-w-xl mt-12 bg-background relative z-20">
           <SearchOverlay />
         </div>
+        
+        <div className="mt-8 flex items-center gap-6 animate-in fade-in slide-in-from-bottom-2 duration-700 delay-500">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground font-medium">
+            <span className="w-2 h-2 rounded-full bg-[#4ADE80]"></span> 100% Official Pricing
+          </div>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground font-medium">
+            <span className="w-2 h-2 rounded-full bg-foreground/40"></span> Updated Daily
+          </div>
+        </div>
       </div>
     </motion.div>
 
-    {/* Right Column: 3D Render Image */}
+    {/* Right Column: Cinematic Scene Render */}
     <motion.div 
        initial={{ opacity: 0 }}
        animate={{ opacity: 1 }}
        transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
-       className="flex-1 w-full relative h-[50vh] lg:h-full lg:min-h-full bg-muted"
+       className="flex-1 w-full relative h-[50vh] lg:h-full lg:min-h-full bg-black overflow-hidden"
     >
-      <OptimizedImage 
-        src="https://images.unsplash.com/photo-1695420967527-fac424bd0d39?q=80&w=2000&auto=format&fit=crop" 
-        alt="Device Internal Ecosystem Render" 
-        className="w-full h-full object-cover scale-[1.02] filter brightness-95 dark:brightness-[0.85]"
-      />
+      {prefersReducedMotion ? (
+        <OptimizedImage 
+          src="https://images.unsplash.com/photo-1695420967527-fac424bd0d39?q=80&w=2000&auto=format&fit=crop" 
+          alt="Device Internal Ecosystem Render" 
+          className="w-full h-full object-cover scale-[1.02] filter brightness-95 dark:brightness-[0.85]"
+        />
+      ) : (
+        <Suspense fallback={
+          <OptimizedImage 
+            src="https://images.unsplash.com/photo-1695420967527-fac424bd0d39?q=80&w=2000&auto=format&fit=crop" 
+            alt="Device Internal Ecosystem Render" 
+            className="w-full h-full object-cover filter brightness-50"
+          />
+        }>
+          <CinematicScene />
+        </Suspense>
+      )}
+      
       {/* Editorial Image Overlays */}
-      <div className="absolute inset-0 bg-gradient-to-t lg:bg-gradient-to-r from-background/40 to-transparent mix-blend-overlay pointer-events-none"></div>
-      <div className="absolute inset-0 shadow-[inset_0_0_100px_rgba(0,0,0,0.1)] pointer-events-none"></div>
+      <div className="absolute inset-0 bg-gradient-to-t lg:bg-gradient-to-r from-background/40 to-transparent mix-blend-overlay pointer-events-none z-10"></div>
+      <div className="absolute inset-0 shadow-[inset_0_0_100px_rgba(0,0,0,0.1)] pointer-events-none z-10"></div>
     </motion.div>
    </section>
 
@@ -88,13 +116,7 @@ export function HomePage() {
      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
       {recentPhones.map(phone => (
        <Link key={phone.id} to={`/device/${phone.id}`} className="group flex items-center gap-4 p-4 rounded-2xl border border-border bg-card hover:border-foreground/30 transition-colors">
-        <div className="w-16 h-16 bg-muted rounded-xl flex items-center justify-center p-2">
-         {phone.official_image_source ? (
-          <OptimizedImage src={phone.official_image_source} alt={phone.name} className="w-full h-full object-contain" />
-         ) : (
-          <OptimizedImage src={phone.image} alt={phone.name} className="w-full h-full object-contain" />
-         )}
-        </div>
+        <ThumbnailImage deviceSlug={phone.slug} alt={phone.name} />
         <div className="flex-1">
          <h4 className="font-medium text-foreground tracking-tight">{phone.name}</h4>
          <span className="text-xs text-muted-foreground">View Again →</span>
@@ -113,13 +135,11 @@ export function HomePage() {
    <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-24 items-center">
     <motion.div 
       style={{ y: imgY1 }}
-      className="w-full aspect-[4/5] rounded-[32px] overflow-hidden bg-muted relative elevation-subtle hover-lift"
+      className="w-full aspect-[4/5] rounded-[32px] overflow-hidden bg-muted relative elevation-subtle hover-lift p-8"
     >
-      <OptimizedImage 
-        src={featuredDevice.image} 
+      <FloatingImage 
+        deviceSlug={featuredDevice.slug || featuredDevice.id.replace('nothing-', '')} 
         alt={featuredDevice.name} 
-        className="w-full h-full object-cover" 
-        loading="lazy" 
       />
     </motion.div>
     <div className="flex flex-col items-start gap-8">
@@ -158,11 +178,12 @@ export function HomePage() {
    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 md:gap-14">
     {POPULAR_DEVICES.slice(0, 3).map((device) => (
      <Link key={device.id} to={`/device/${device.id}`} className="group flex flex-col gap-8 flex-1">
-      <div className="w-full aspect-[3/4] rounded-[32px] overflow-hidden bg-card border border-border/50 relative elevation-subtle hover-lift">
-       <OptimizedImage 
-         src={device.image} 
+      <div className="w-full aspect-[3/4] rounded-[32px] overflow-hidden bg-card border border-border/50 relative elevation-subtle hover-lift p-12">
+       <DeviceImage 
+         deviceSlug={device.slug || device.id.replace('nothing-', '')} 
+         imageType="thumbnail"
          alt={device.name} 
-         className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105" 
+         className="w-full h-full object-contain transition-transform duration-700 ease-out group-hover:scale-105" 
          loading="lazy" 
        />
       </div>
@@ -203,7 +224,7 @@ export function HomePage() {
       style={{ y: imgY2 }}
       className="md:order-1 w-full aspect-square rounded-[32px] overflow-hidden bg-card border border-border elevation-subtle flex items-center justify-center p-[20px] sm:p-[40px] hover-lift"
     >
-      <OptimizedImage src="https://images.unsplash.com/photo-1695420967527-fac424bd0d39?q=80&w=800&auto=format&fit=crop" alt="Phone 3a" className="w-full h-full object-cover rounded-[20px]" loading="lazy" />
+      <DeviceImage deviceSlug="phone-3a" imageType="hero" alt="Phone 3a" className="w-full h-full object-contain rounded-[20px]" loading="lazy" />
     </motion.div>
    </div>
   </section>
@@ -224,7 +245,7 @@ export function HomePage() {
      </Link>
     </div>
     <div className="w-full aspect-square rounded-[32px] overflow-hidden bg-card border border-border elevation-subtle flex items-center justify-center p-[20px] sm:p-[40px] hover-lift">
-      <OptimizedImage src="https://images.unsplash.com/photo-1693310052988-cb97fc98b111?q=80&w=800&auto=format&fit=crop" alt="CMF Phone 2 Pro" className="w-full h-full object-cover rounded-[20px]" loading="lazy" />
+      <DeviceImage deviceSlug="cmf-phone-2-pro" imageType="hero" alt="CMF Phone 2 Pro" className="w-full h-full object-contain rounded-[20px]" loading="lazy" />
     </div>
    </div>
   </section>
@@ -294,7 +315,7 @@ export function HomePage() {
       Find official repair hubs.
      </h2>
      <p className="text-xl text-muted-foreground font-light leading-relaxed mb-12">
-      Locate authorized Nothing and CMF repair centers near your current location. We securely route your location to Google Maps API strictly for local proximity filtering.
+      Locate authorized Nothing and CMF repair centers near your current location. We securely match your location against official proximity data using privacy-first OpenStreetMap and Overpass API.
      </p>
      
      {locationStatus === 'Allowed' && nearestCenters.length > 0 ? (

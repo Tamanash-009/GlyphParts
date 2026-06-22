@@ -21,6 +21,7 @@ const PrivacyPage = lazy(() => import('./pages/LegalPages').then(module => ({ de
 const TermsPage = lazy(() => import('./pages/LegalPages').then(module => ({ default: module.TermsPage })));
 const DisclaimerPage = lazy(() => import('./pages/LegalPages').then(module => ({ default: module.DisclaimerPage })));
 const DevicePage = lazy(() => import('./pages/DevicePage').then(module => ({ default: module.DevicePage })));
+const DevicePartPage = lazy(() => import('./pages/DevicePartPage').then(module => ({ default: module.DevicePartPage })));
 const ComparePage = lazy(() => import('./pages/ComparePage').then(module => ({ default: module.ComparePage })));
 const ContactPage = lazy(() => import('./pages/ContactPage').then(module => ({ default: module.ContactPage })));
 const ChangelogPage = lazy(() => import('./pages/ChangelogPage').then(module => ({ default: module.ChangelogPage })));
@@ -37,7 +38,29 @@ export default function App() {
         <SettingsProvider>
           <UserProvider>
             <BrowserRouter>
-              <SEO />
+              <SEO 
+                schemas={[
+                  {
+                    "@context": "https://schema.org",
+                    "@type": "Organization",
+                    "name": "GlyphParts",
+                    "url": "https://glyphparts.com",
+                    "logo": "https://glyphparts.com/logo.png",
+                    "description": "The definitive Nothing and CMF spare-parts archive."
+                  },
+                  {
+                    "@context": "https://schema.org",
+                    "@type": "WebSite",
+                    "name": "GlyphParts",
+                    "url": "https://glyphparts.com",
+                    "potentialAction": {
+                      "@type": "SearchAction",
+                      "target": "https://glyphparts.com/search?q={search_term_string}",
+                      "query-input": "required name=search_term_string"
+                    }
+                  }
+                ]}
+              />
               <OfflineBanner />
               <Layout>
                 <Suspense fallback={<PageSuspenseLoader />}>
@@ -50,8 +73,10 @@ export default function App() {
                     <Route path="/saved" element={<SavedDevicesPage />} />
                     <Route path="/compare" element={<ComparePage />} />
                     <Route path="/device/:id" element={<DevicePage />} />
+                    <Route path="/device/:id/:partId" element={<DevicePartPage />} />
                     
                     <Route path="/centers" element={<ServiceCentersPage />} />
+                    <Route path="/service-centers/:country/:state/:city" element={<ServiceCentersPage />} />
                     <Route path="/settings" element={<SettingsPage />} />
                     
                     <Route path="/privacy" element={<PrivacyPage />} />

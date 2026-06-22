@@ -9,6 +9,7 @@ interface SEOProps {
   image?: string;
   productPriceAmount?: number | string;
   productPriceCurrency?: string;
+  schemas?: Record<string, any>[];
 }
 
 export const SEO: React.FC<SEOProps> = ({ 
@@ -18,7 +19,8 @@ export const SEO: React.FC<SEOProps> = ({
   type = "website",
   image = "/og-image.jpg",
   productPriceAmount,
-  productPriceCurrency
+  productPriceCurrency,
+  schemas = []
 }) => {
   const siteTitle = "Nothing Parts";
   const fullTitle = title === siteTitle ? title : `${title} | ${siteTitle}`;
@@ -53,6 +55,13 @@ export const SEO: React.FC<SEOProps> = ({
       {productPriceCurrency && (
         <meta property="product:price:currency" content={productPriceCurrency} />
       )}
+
+      {/* JSON-LD Schemas */}
+      {schemas.map((schema, index) => (
+        <script key={index} type="application/ld+json">
+          {JSON.stringify(schema)}
+        </script>
+      ))}
     </Helmet>
   );
 };

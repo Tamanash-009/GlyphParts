@@ -53,6 +53,15 @@ export default defineConfig(() => {
                 expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 * 24 * 30 },
                 cacheableResponse: { statuses: [0, 200] }
               }
+            },
+            {
+              urlPattern: /^https:\/\/[a-c]\.tile\.openstreetmap\.org\/.*/i,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'osm-tiles-cache',
+                expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 30 }, // 30 days
+                cacheableResponse: { statuses: [0, 200] }
+              }
             }
           ]
         }

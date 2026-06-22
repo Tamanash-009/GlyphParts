@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { getDatabaseState, Phone } from '../data/database';
 import { ArrowRight } from 'lucide-react';
 import { SEO } from '../components/SEO';
+import { DeviceImage } from '../components/images/DeviceImage';
 
 export function DevicesPage() {
  const { phones } = useMemo(() => getDatabaseState(), []);
@@ -53,14 +54,13 @@ export function DevicesPage() {
             <div className="absolute top-0 right-0 w-64 h-64 rounded-full blur-[60px] opacity-20 pointer-events-none transition-transform duration-700 group-hover:scale-125" style={{ backgroundColor: device.imageColor, transform: 'translate(20%, -20%)' }} />
             <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full blur-[60px] opacity-10 pointer-events-none group-hover:opacity-20 transition-opacity duration-700" style={{ backgroundColor: device.imageColor }} />
             
-            {/* Minimal line drawing of a phone reflecting Nothing aesthetics */}
-            <svg viewBox="0 0 100 200" className="w-[45%] h-auto text-foreground/40 group-hover:text-foreground/80 transition-colors duration-500 drop-shadow-sm group-hover:scale-105" fill="none" stroke="currentColor" strokeWidth="2">
-             <rect x="5" y="5" width="90" height="190" rx="16" />
-             <line x1="50" y1="185" x2="50" y2="185" strokeWidth="4" strokeLinecap="round" />
-             <circle cx="25" cy="25" r="8" />
-             <circle cx="25" cy="45" r="5" />
-             <path d="M 40 100 Q 50 80 60 100 T 80 100" strokeDasharray="4 4" />
-            </svg>
+            <DeviceImage 
+              deviceSlug={device.slug} 
+              imageType="front" 
+              alt={device.name}
+              className="w-[65%] h-auto max-h-full object-contain"
+              containerClassName="absolute inset-0 flex items-center justify-center p-6 mix-blend-plus-lighter"
+            />
            </div>
            
            <div className="flex items-center justify-between px-2 mt-auto">

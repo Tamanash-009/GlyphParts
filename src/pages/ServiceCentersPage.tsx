@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { useSettings } from '../contexts/SettingsContext';
 import { SEO } from '../components/SEO';
 import { SERVICE_CENTERS } from '../data/serviceCenters';
@@ -24,17 +25,25 @@ function MapUpdater({ center }: { center: [number, number] }) {
 }
 
 export function ServiceCentersPage() {
+ const { country, state, city } = useParams<{ country?: string, state?: string, city?: string }>();
  const { location, locationStatus, requestLocation, nearestCenters } = useSettings();
  const [copiedId, setCopiedId] = useState<string | null>(null);
 
- const centersToDisplay = nearestCenters;
+ // If programmatic route is hit, use static SERVICE_CENTERS for SEO crawlability
+ const centersToDisplay = city && state && country 
+   ? SERVICE_CENTERS.filter(c => c.city.toLowerCase() === city.toLowerCase())
+   : nearestCenters;
+
+ const pageTitle = city ? `Nothing Service Centers in ${city.replace(/-/g, ' ')}, ${state}` : "Service Centers";
+ const pageDesc = city ? `Find authorized Nothing and CMF service centers in ${city.replace(/-/g, ' ')}. Get official repairs, warranty support, and address details.` : "Find authorized Nothing and CMF service centers near you for professional repairs and support.";
+ const canonicalUrl = city ? `/service-centers/${country}/${state}/${city}` : "/service-centers";
 
  return (
  <div className="max-w-4xl mx-auto px-6 pt-24 md:pt-32 pb-32 animate-in fade-in duration-700">
   <SEO 
-  title="Service Centers"
-  description="Find authorized Nothing and CMF service centers near you for professional repairs and support."
-  canonical="/centers"
+  title={pageTitle}
+  description={pageDesc}
+  canonical={canonicalUrl}
   />
  <div className="mb-16">
   <h1 className="text-5xl md:text-7xl font-sans font-bold tracking-tight text-foreground dark:text-[#FFFFFF] mb-6 leading-none">Service Centers</h1>
@@ -107,8 +116,8 @@ export function ServiceCentersPage() {
     <MapPin className="h-8 w-8 text-muted-foreground opacity-50" />
    </div>
    <div className="max-w-md">
-    <h3 className="text-2xl font-display font-medium text-foreground mb-3">No Nearby Centers Found</h3>
-    <p className="text-muted-foreground mb-6">We couldn't find any centers via Overpass API near your current location. Please check your nearest major city.</p>
+    <h3 className="text-2xl font-display font-medium text-foreground mb-3">No authorized Nothing service center found nearby.</h3>
+    <p className="text-muted-foreground mb-6">We prioritize accuracy. If no official center is nearby, we do not invent locations.</p>
    </div>
   </div>
  ) : (
@@ -140,9 +149,14 @@ export function ServiceCentersPage() {
    </span>
   )}
   </div>
-  <h3 className="text-2xl md:text-3xl font-display font-medium text-foreground mb-2 leading-tight">
-  {center.name}
-  </h3>
+  <div className="flex items-center gap-3">
+    <h3 className="text-2xl md:text-3xl font-display font-medium text-foreground mb-2 leading-tight">
+    {center.name}
+    </h3>
+    {center.authorized && (
+      <span className="px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-500 text-xs font-bold uppercase tracking-wider border border-blue-500/20">Authorized</span>
+    )}
+  </div>
   <p className="text-lg text-muted-foreground dark:text-[#A1A1AA] font-normal font-sans">
   {center.city}, {center.state}, {center.country}
   </p>
@@ -173,28 +187,39 @@ export function ServiceCentersPage() {
   <div className="w-full h-px bg-border/45" />
 
   <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
-  <div className="space-y-4">
-    <div className="flex items-start gap-4 text-muted-foreground">
-    <MapPin className="h-5 w-5 shrink-0 mt-1 text-muted-foreground" />
-    <p className="leading-relaxed font-normal text-muted-foreground dark:text-[#A1A1AA]">{center.address}</p>
+    <div className="space-y-4">
+      <div className="flex items-start gap-4 text-muted-foreground">
+        <MapPin className="h-5 w-5 shrink-0 mt-1 text-muted-foreground" />
+        <p className="leading-relaxed font-normal text-muted-foreground dark:text-[#A1A1AA]">{center.address}</p>
+      </div>
+      <div className="flex items-center gap-4 text-muted-foreground">
+        <Compass className="h-5 w-5 shrink-0 text-muted-foreground" />
+        <span className="font-mono text-sm text-muted-foreground dark:text-[#A1A1AA]">
+          {center.latitude.toFixed(6)}, {center.longitude.toFixed(6)}
+        </span>
+      </div>
     </div>
-    <div className="flex items-center gap-4 text-muted-foreground">
-     <Compass className="h-5 w-5 shrink-0 text-muted-foreground" />
-     <span className="font-mono text-sm text-muted-foreground dark:text-[#A1A1AA]">
-      {center.latitude.toFixed(6)}, {center.longitude.toFixed(6)}
-     </span>
+    <div className="space-y-4">
+      <div className="flex items-center gap-4 text-muted-foreground">
+        <Phone className="h-5 w-5 shrink-0 text-muted-foreground" />
+        <a href={`tel:${center.phone}`} className="text-muted-foreground dark:text-[#A1A1AA] hover:text-foreground dark:hover:text-[#FFFFFF] transition-colors">{center.phone}</a>
+      </div>
+      {center.website && (
+        <div className="flex items-center gap-4 text-muted-foreground overflow-hidden">
+          <ArrowUpRight className="h-5 w-5 shrink-0 text-muted-foreground" />
+          <a href={center.website} target="_blank" rel="noopener noreferrer" className="text-muted-foreground dark:text-[#A1A1AA] hover:text-foreground dark:hover:text-[#FFFFFF] transition-colors truncate">{center.website}</a>
+        </div>
+      )}
+      <div className="flex items-center gap-4 text-muted-foreground">
+        <Clock className="h-5 w-5 shrink-0 text-muted-foreground" />
+        <span className="text-muted-foreground dark:text-[#A1A1AA]">{center.opening_hours}</span>
+      </div>
+      {center.last_verified && (
+        <div className="flex items-center gap-4 text-muted-foreground">
+          <span className="text-xs uppercase tracking-widest text-muted-foreground/60 font-mono">Last Verified: {new Date(center.last_verified).toLocaleDateString()}</span>
+        </div>
+      )}
     </div>
-  </div>
-  <div className="space-y-4">
-  <div className="flex items-center gap-4 text-muted-foreground">
-   <Phone className="h-5 w-5 shrink-0 text-muted-foreground" />
-   <a href={`tel:${center.phone}`} className="text-muted-foreground dark:text-[#A1A1AA] hover:text-foreground dark:hover:text-[#FFFFFF] transition-colors">{center.phone}</a>
-  </div>
-  <div className="flex items-center gap-4 text-muted-foreground">
-   <Clock className="h-5 w-5 shrink-0 text-muted-foreground" />
-   <span className="text-muted-foreground dark:text-[#A1A1AA]">{center.opening_hours}</span>
-  </div>
-  </div>
   </div>
 
   <div className="flex-wrap flex items-center gap-4 mt-2">

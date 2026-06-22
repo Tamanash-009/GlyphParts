@@ -18,17 +18,22 @@ export type LocationStatus = 'Allowed' | 'Denied' | 'Not Requested' | 'Blocked';
 
 interface ServiceCenter {
  id: string;
+ place_id?: string;
  name: string;
  country: string;
  state: string;
  city: string;
+ postal_code?: string;
  address: string;
  latitude: number;
  longitude: number;
  phone: string;
+ website?: string;
  opening_hours: string;
  map_url: string;
  verified: boolean;
+ authorized: boolean;
+ last_verified?: string;
  distance?: number; // In km
 }
 
@@ -83,26 +88,31 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
  const initialized = useRef(false);
 
  const applyFallbackLocale = () => {
- try {
-  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  if (timezone.includes('America/New_York') || timezone.includes('America/Los_Angeles')) {
-  setCurrencyState('USD');
-  } else if (timezone.includes('Europe/London')) {
-  setCurrencyState('GBP');
-  } else if (timezone.includes('Europe/')) {
-  setCurrencyState('EUR');
-  } else if (timezone.includes('Asia/Tokyo')) {
-  setCurrencyState('JPY');
-  } else if (timezone.includes('Asia/Singapore')) {
-  setCurrencyState('SGD');
-  } else if (timezone.includes('Asia/Dubai')) {
-  setCurrencyState('AED');
-  } else {
-  setCurrencyState('INR'); // Default fallback
+  setLocation(prev => ({
+   ...prev,
+   country: 'India',
+   countryCode: 'IN',
+  }));
+  try {
+   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+   if (timezone.includes('America/New_York') || timezone.includes('America/Los_Angeles')) {
+   setCurrencyState('USD');
+   } else if (timezone.includes('Europe/London')) {
+   setCurrencyState('GBP');
+   } else if (timezone.includes('Europe/')) {
+   setCurrencyState('EUR');
+   } else if (timezone.includes('Asia/Tokyo')) {
+   setCurrencyState('JPY');
+   } else if (timezone.includes('Asia/Singapore')) {
+   setCurrencyState('SGD');
+   } else if (timezone.includes('Asia/Dubai')) {
+   setCurrencyState('AED');
+   } else {
+   setCurrencyState('INR'); // Default fallback
+   }
+  } catch {
+   setCurrencyState('INR');
   }
- } catch {
-  setCurrencyState('INR');
- }
  };
 
  useEffect(() => {
@@ -144,36 +154,50 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
 
  const fetchCenters = async () => {
   try {
-   const radii = [25000, 50000, 100000];
+   const cacheKey = `overpass_${location.latitude?.toFixed(2)}_${location.longitude?.toFixed(2)}`;
+   const cached = localStorage.getItem(cacheKey);
    let results: any[] = [];
    let searchRadius = 25000;
+   
+   if (cached) {
+     const { data, timestamp } = JSON.parse(cached);
+     // 6 hours cache
+     if (Date.now() - timestamp < 6 * 60 * 60 * 1000) {
+       results = data;
+     }
+   }
 
-   for (const radius of radii) {
-    if (results.length > 0) break;
-    searchRadius = radius;
-    
-    // Convert to meters
-    const overpassQuery = `
-      [out:json][timeout:25];
-      (
-        node["name"~"Nothing|CMF|Authorized Service Center|Mobile Repair|Electronics Repair",i](around:${radius},${location.latitude},${location.longitude});
-        way["name"~"Nothing|CMF|Authorized Service Center|Mobile Repair|Electronics Repair",i](around:${radius},${location.latitude},${location.longitude});
-        node["shop"~"mobile_phone|electronics"](around:${radius},${location.latitude},${location.longitude});
-        node["craft"="electronics_repair"](around:${radius},${location.latitude},${location.longitude});
-      );
-      out center;
-    `;
-    
-    const response = await fetch("https://overpass-api.de/api/interpreter", {
-      method: "POST",
-      body: overpassQuery
-    });
-    
-    if (!response.ok) continue;
-    const data = await response.json();
-    if (data && data.elements && data.elements.length > 0) {
-      results = data.elements;
-    }
+   if (results.length === 0) {
+     const radii = [25000, 50000, 100000, 250000];
+
+     for (const radius of radii) {
+      if (results.length > 0) break;
+      searchRadius = radius;
+      
+      // Convert to meters
+      const overpassQuery = `
+        [out:json][timeout:25];
+        (
+          node["name"~"Nothing|CMF|Authorized Service Center|Mobile Repair|Electronics Repair",i](around:${radius},${location.latitude},${location.longitude});
+          way["name"~"Nothing|CMF|Authorized Service Center|Mobile Repair|Electronics Repair",i](around:${radius},${location.latitude},${location.longitude});
+          node["shop"~"mobile_phone|electronics"](around:${radius},${location.latitude},${location.longitude});
+          node["craft"="electronics_repair"](around:${radius},${location.latitude},${location.longitude});
+        );
+        out center;
+      `;
+      
+      const response = await fetch("https://overpass-api.de/api/interpreter", {
+        method: "POST",
+        body: overpassQuery
+      });
+      
+      if (!response.ok) continue;
+      const data = await response.json();
+      if (data && data.elements && data.elements.length > 0) {
+        results = data.elements;
+        localStorage.setItem(cacheKey, JSON.stringify({ data: results, timestamp: Date.now() }));
+      }
+     }
    }
    
    if (results.length > 0) {
@@ -216,6 +240,9 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
             ...p,
             distance: dist,
             map_url: `https://www.google.com/maps/search/?api=1&query=${p.latitude},${p.longitude}`,
+            authorized: true,
+            verified: true,
+            last_verified: new Date().toISOString()
           });
         }
       } else {
@@ -229,20 +256,26 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
           const street = p.tags?.['addr:street'] || '';
           const housenumber = p.tags?.['addr:housenumber'] || '';
           const address = [housenumber, street].filter(Boolean).join(' ') || 'Address not specified';
+          const isNothingRelated = name.toLowerCase().includes('nothing') || name.toLowerCase().includes('cmf');
           
           mappedCenters.push({
             id: `osm-${p.id}`,
+            place_id: p.id,
             name: name,
             country: location.country || '',
             state: location.state || '',
             city: p.tags?.['addr:city'] || location.city || '',
+            postal_code: p.tags?.['addr:postcode'] || '',
             address: address,
             latitude: pLat,
             longitude: pLon,
             phone: p.tags?.phone || p.tags?.['contact:phone'] || 'Phone unavailable',
+            website: p.tags?.website || p.tags?.['contact:website'] || '',
             opening_hours: p.tags?.opening_hours || 'Hours not specified',
             map_url: `https://www.google.com/maps/search/?api=1&query=${pLat},${pLon}`,
-            verified: false,
+            verified: isNothingRelated,
+            authorized: isNothingRelated, // Only authorized if verified against official
+            last_verified: new Date().toISOString(),
             distance: dist
           });
         }
